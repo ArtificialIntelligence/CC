@@ -2,6 +2,32 @@
 	A new attempt at coding a neural Network
 	Author: Wassil Janssen a.k.a. Creator
 ]]--
+
+local function parseFile(path)
+	local file = fs.open(path,"r")
+	local data = file.readAll()
+	file.close()
+	data = data:gsub("\n",""):gsub(" ","")
+	local ret = {
+		input = {},
+		output = {}
+	}
+	local var = 1
+	for token in data:gmatch("^=+") do
+		if var == 1 then
+			for i=1,#token do
+				ret.input[i] = token:sub(i,i) == "0" and 0 or 1
+			end
+			var = 2
+		else
+			for i=1,#token do
+				ret.output[i] = token:sub(i,i) == "0" and 0 or 1
+			end
+		end
+	end
+	return ret
+end
+
 --[[Class Neuron]]
 local function Neuron(numOutputs,myIndex)
 	--[[Private]]--
@@ -177,6 +203,24 @@ function Net(topology)
 			end
 		end
 	end
+	function self.trainFromDir(path,times)
+		assert(fs.isDir(path),"The path is not a directory.")
+	
+		local instances = {}
+		for i,v in pairs(fs.list(path)) do
+			instances[#instances+1] = parseFile(path.."/"..i)
+		end
+		for i=1,times do
+			for k,m in pairs(instances) do
+				self.feedForward(instances.input[k])
+				self.backProp(instances.output[k])
+				os.queueEvent("wow")
+				coroutine.yield()
+			end
+			print(i)
+		end
+	end
+
 	return self
 end
 
