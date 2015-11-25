@@ -5,6 +5,7 @@
 
 local function parseFile(path)
 	local file = fs.open(path,"r")
+	print(path)
 	local data = file.readAll()
 	file.close()
 	data = data:gsub("\n",""):gsub(" ","")
