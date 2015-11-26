@@ -5,7 +5,6 @@
 
 local function parseFile(path)
 	local file = fs.open(path,"r")
-	print(path)
 	local data = file.readAll()
 	file.close()
 	data = data:gsub("\n",""):gsub(" ","")
@@ -14,7 +13,7 @@ local function parseFile(path)
 		output = {}
 	}
 	local var = 1
-	for token in data:gmatch("^=+") do
+	for token in data:gmatch("[^=]+") do
 		if var == 1 then
 			for i=1,#token do
 				ret.input[i] = token:sub(i,i) == "0" and 0 or 1
@@ -26,6 +25,7 @@ local function parseFile(path)
 			end
 		end
 	end
+	ret.path = path
 	return ret
 end
 
@@ -204,17 +204,20 @@ function Net(topology)
 			end
 		end
 	end
-	function self.trainFromDir(path,times)
+	function self.trainFromDir(path,times,debug)
 		assert(fs.isDir(path),"The path is not a directory.")
 	
 		local instances = {}
 		for i,v in pairs(fs.list(path)) do
-			instances[#instances+1] = parseFile(path.."/"..i)
+			instances[#instances+1] = parseFile(path.."/"..v)
 		end
 		for i=1,times do
 			for k,m in pairs(instances) do
-				self.feedForward(instances.input[k])
-				self.backProp(instances.output[k])
+				if debug then
+					print(m.path)
+				end
+				self.feedForward(m.input)
+				self.backProp(m.output)
 				os.queueEvent("wow")
 				coroutine.yield()
 			end
