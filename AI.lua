@@ -3,7 +3,7 @@
 	Author: Wassil Janssen a.k.a. Creator
 ]]--
 
-local function parseFile(path)
+function parseFile(path)
 	local file = fs.open(path,"r")
 	local data = file.readAll()
 	file.close()
